@@ -231,7 +231,7 @@ with st.sidebar:
 # ============================================================
 # UTAMA: CARTA GANN SQUARE
 # ============================================================
-st.title("🎯 @MFR GANN CHEK")
+st.title("🎯 @MFR TRADE CHECK")
 
 positions = [
     (row, col)
