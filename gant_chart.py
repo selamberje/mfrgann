@@ -2,19 +2,18 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ============================================================
-# MFR GANN SQUARE OF 9 - STREAMLIT HTML/CSS GRID EDITION
+# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (SIDEBAR & FULL CHART)
 # ============================================================
 
 st.set_page_config(
-    page_title="MFR Gann Square of 9",
+    page_title="MFR Trade Checking",
     page_icon="📊",
     layout="wide"
 )
 
 GRID_SIZE = 35
-MAX_NUMBER = 210  # Batas nomor 1..210
+MAX_NUMBER = 210  # Batas nombor 1..210
 
-# Kode Warna Hex Persis Seperti Aplikasi Desktop
 COLOR_HEX = {
     "R": "#BF0000", # Red (Very Strong)
     "B": "#0000DD", # Blue (Strong)
@@ -164,51 +163,74 @@ def calculate_levels(cp):
     }
 
 
-# ============================================================
-# STREAMLIT UI LAYOUT & CUSTOM CSS CANVAS RENDERER
-# ============================================================
-
+# Custom CSS untuk gaya kad di Sidebar
 st.markdown("""
 <style>
-    .metric-card {
-        background-color: #F8FAFC;
+    /* Styling kad untuk output level di Sidebar */
+    .sidebar-card {
+        background-color: #1E293B;
         padding: 12px;
         border-radius: 8px;
-        border: 1px solid #D9E1EA;
+        margin-bottom: 12px;
+        border: 1px solid #334155;
         text-align: center;
+    }
+    .sidebar-card-title {
+        font-size: 11px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .sidebar-card-value {
+        font-size: 22px;
+        font-weight: bold;
+        color: #FFFFFF;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎯 MFR GANN SQUARE OF 9")
 
-# Sidebar
+# ============================================================
+# SIDEBAR: PRICE INPUT & OUTPUT LEVELS
+# ============================================================
 with st.sidebar:
     st.header("⚙️ PRICE INPUT")
     cp_input = st.number_input(
         "Current Price (CP):",
         min_value=0.01,
-        value=0.80,
+        value=1.00,
         step=0.01,
         format="%.2f"
     )
     st.button("CALCULATE GANN LEVELS", use_container_width=True)
 
-# Hitung Level
-levels = calculate_levels(cp_input)
+    st.divider()
 
-# Ringkasan Level (Metrics)
-c1, c2, c3 = st.columns(3)
-with c1:
-    st.markdown(f"<div class='metric-card'><small style='color:#0000DD;font-weight:bold;'>STOP LOSS (SL)</small><h2 style='margin:0;'>RM {levels['s']:.2f}</h2></div>", unsafe_allow_html=True)
-with c2:
-    st.markdown(f"<div class='metric-card'><small style='color:#7C3AED;font-weight:bold;'>ENTRY PRICE (EP)</small><h2 style='margin:0;'>RM {levels['ep']:.2f}</h2></div>", unsafe_allow_html=True)
-with c3:
-    st.markdown(f"<div class='metric-card'><small style='color:#D97706;font-weight:bold;'>TARGET (TP)</small><h2 style='margin:0;'>RM {levels['tp']:.2f}</h2></div>", unsafe_allow_html=True)
+    # Hitung Keputusan Level
+    levels = calculate_levels(cp_input)
 
-st.write("")
+    # Output Box dimasukkan ke Sidebar
+    st.markdown(f"""
+    <div class="sidebar-card">
+        <div class="sidebar-card-title" style="color: #60A5FA;">STOP LOSS (SL)</div>
+        <div class="sidebar-card-value">RM {levels['s']:.2f}</div>
+    </div>
+    <div class="sidebar-card">
+        <div class="sidebar-card-title" style="color: #C084FC;">ENTRY PRICE (EP)</div>
+        <div class="sidebar-card-value">RM {levels['ep']:.2f}</div>
+    </div>
+    <div class="sidebar-card">
+        <div class="sidebar-card-title" style="color: #FBBF24;">TARGET (TP)</div>
+        <div class="sidebar-card-value">RM {levels['tp']:.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Menghitung batas koordinat nomor 1..210
+
+# ============================================================
+# UTAMA: CARTA GANN SQUARE (PENAWARAN PENUH TANPA SCROLLBAR)
+# ============================================================
+st.title("🎯 MFR GANN SQUARE OF 9")
+
 positions = [
     (row, col)
     for row in range(GRID_SIZE)
@@ -219,39 +241,42 @@ positions = [
 min_r, max_r = min(p[0] for p in positions), max(p[0] for p in positions)
 min_c, max_c = min(p[1] for p in positions), max(p[1] for p in positions)
 visible_cols = max_c - min_c + 1
+visible_rows = max_r - min_r + 1
 
 highlight_nums = {levels['s_num'], levels['ep_num'], levels['tp_num']}
 
-# Generate HTML Grid Persis Seperti Canvas Tkinter
+# Bina Kod HTML/CSS Carta
 html_code = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <style>
+    * {{
+        box-sizing: border-box;
+    }}
     body {{
         margin: 0;
-        padding: 10px;
-        background-color: #F7F9FC;
+        padding: 0;
+        background-color: transparent;
         font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
+        overflow: hidden;
     }}
     .gann-container {{
         display: grid;
-        grid-template-columns: repeat({visible_cols}, minmax(18px, 1fr));
+        grid-template-columns: repeat({visible_cols}, 1fr);
         gap: 1px;
         background-color: #777777;
         border: 1px solid #777777;
         padding: 1px;
         width: 100%;
-        max-width: 900px;
+        margin: auto;
     }}
     .gann-cell {{
-        aspect-ratio: 1.8 / 1;
+        aspect-ratio: 1.5 / 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(8px, 1.1vw, 11px);
+        font-size: clamp(8px, 1.1vw, 13px);
         font-weight: bold;
         user-select: none;
     }}
@@ -276,7 +301,7 @@ for r in range(min_r, max_r + 1):
             symbol = COLOR_PATTERN[r][c]
             bg_color = COLOR_HEX.get(symbol, "#FFFFFF")
             text_color = TEXT_COLOR_HEX.get(symbol, "#000000")
-            
+
             if num in highlight_nums:
                 html_code += f'<div class="gann-cell blink-cell">{num}</div>'
             else:
@@ -290,5 +315,6 @@ html_code += """
 </html>
 """
 
-# Render HTML komponen ke Streamlit dengan tinggi responsif
-components.html(html_code, height=450, scrolling=True)
+# Ketinggian dinamis mencukupi supaya tiada scrollbar
+total_height = visible_rows * 38 + 20
+components.html(html_code, height=total_height, scrolling=False)
