@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ============================================================
-# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (BORDER BLINKING)
+# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (CUSTOM BORDER BLINK)
 # ============================================================
 
 st.set_page_config(
@@ -154,6 +154,7 @@ def calculate_levels(cp):
 
     return {
         "cp": cp,
+        "cp_num": base_num,
         "s_num": support_num,
         "ep_num": entry_num,
         "tp_num": target_num,
@@ -170,7 +171,7 @@ st.markdown("""
         background-color: #1E293B;
         padding: 12px;
         border-radius: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         border: 1px solid #334155;
         text-align: center;
     }
@@ -181,7 +182,7 @@ st.markdown("""
         margin-bottom: 4px;
     }
     .sidebar-card-value {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         color: #FFFFFF;
     }
@@ -209,6 +210,10 @@ with st.sidebar:
 
     st.markdown(f"""
     <div class="sidebar-card">
+        <div class="sidebar-card-title" style="color: #A855F7;">CURRENT PRICE (CP)</div>
+        <div class="sidebar-card-value">RM {cp_input:.2f}</div>
+    </div>
+    <div class="sidebar-card">
         <div class="sidebar-card-title" style="color: #EF4444;">STOP LOSS / SUPPORT (SL)</div>
         <div class="sidebar-card-value">RM {levels['s']:.2f}</div>
     </div>
@@ -224,7 +229,7 @@ with st.sidebar:
 
 
 # ============================================================
-# UTAMA: CARTA GANN SQUARE (BORDER BLINKING)
+# UTAMA: CARTA GANN SQUARE
 # ============================================================
 st.title("🎯 MFR GANN SQUARE OF 9")
 
@@ -240,7 +245,7 @@ min_c, max_c = min(p[1] for p in positions), max(p[1] for p in positions)
 visible_cols = max_c - min_c + 1
 visible_rows = max_r - min_r + 1
 
-# Bina HTML/CSS: Hanya Bingkai (Border) Sahaja Yang Berkelip
+# CSS untuk 4 jenis warna bingkai berkelip
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -280,7 +285,17 @@ html_code = f"""
 
     /* --- ANIMASI BLINKING BINGKAI (BORDER) --- */
     
-    /* 🟠 ENTRY PRICE: Bingkai Oren Berkelip */
+    /* 🟣 CURRENT PRICE (CP): Bingkai Purple Berkelip */
+    @keyframes border-purple {{
+        0% {{ box-shadow: inset 0 0 0 3px #A855F7; z-index: 10; }}
+        50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #A855F7; z-index: 10; }}
+    }}
+    .blink-border-cp {{
+        animation: border-purple 1s infinite;
+    }}
+
+    /* 🟠 ENTRY PRICE (EP): Bingkai Oren Berkelip */
     @keyframes border-orange {{
         0% {{ box-shadow: inset 0 0 0 3px #FF8C00; z-index: 10; }}
         50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
@@ -290,21 +305,21 @@ html_code = f"""
         animation: border-orange 1s infinite;
     }}
 
-    /* 🔴 SUPPORT / STOP LOSS: Bingkai Merah Berkelip */
+    /* 🔴 SUPPORT / STOP LOSS (SL): Bingkai Merah Berkelip */
     @keyframes border-red {{
-        0% {{ box-shadow: inset 0 0 0 3px #FF0000; z-index: 10; }}
+        0% {{ box-shadow: inset 0 0 0 3px #EF4444; z-index: 10; }}
         50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
-        100% {{ box-shadow: inset 0 0 0 3px #FF0000; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #EF4444; z-index: 10; }}
     }}
     .blink-border-sl {{
         animation: border-red 1s infinite;
     }}
 
-    /* 🟢 TARGET PRICE: Bingkai Hijau Berkelip */
+    /* 🟢 TARGET PRICE (TP): Bingkai Hijau Berkelip */
     @keyframes border-green {{
-        0% {{ box-shadow: inset 0 0 0 3px #000000; z-index: 10; }}
+        0% {{ box-shadow: inset 0 0 0 3px #22C55E; z-index: 10; }}
         50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
-        100% {{ box-shadow: inset 0 0 0 3px #000000; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #22C55E; z-index: 10; }}
     }}
     .blink-border-tp {{
         animation: border-green 1s infinite;
@@ -323,9 +338,11 @@ for r in range(min_r, max_r + 1):
             bg_color = COLOR_HEX.get(symbol, "#FFFFFF")
             text_color = TEXT_COLOR_HEX.get(symbol, "#000000")
 
-            # Kekalkan warna asal box, tambah class border-blink jika berkenaan
+            # Utamakan CP jika nombor sama dengan EP/SL/TP, atau tentukan bingkai mengikut peringkat
             blink_class = ""
-            if num == levels['ep_num']:
+            if num == levels['cp_num']:
+                blink_class = "blink-border-cp"
+            elif num == levels['ep_num']:
                 blink_class = "blink-border-ep"
             elif num == levels['s_num']:
                 blink_class = "blink-border-sl"
