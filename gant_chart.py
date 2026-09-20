@@ -2,11 +2,11 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ============================================================
-# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (SIDEBAR & FULL CHART)
+# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (CUSTOM BLINK COLORS)
 # ============================================================
 
 st.set_page_config(
-    page_title="MFR Trade Checking",
+    page_title="MFR Gann Square of 9",
     page_icon="📊",
     layout="wide"
 )
@@ -163,10 +163,9 @@ def calculate_levels(cp):
     }
 
 
-# Custom CSS untuk gaya kad di Sidebar
+# Custom CSS Styling Sidebar
 st.markdown("""
 <style>
-    /* Styling kad untuk output level di Sidebar */
     .sidebar-card {
         background-color: #1E293B;
         padding: 12px;
@@ -206,28 +205,26 @@ with st.sidebar:
 
     st.divider()
 
-    # Hitung Keputusan Level
     levels = calculate_levels(cp_input)
 
-    # Output Box dimasukkan ke Sidebar
     st.markdown(f"""
     <div class="sidebar-card">
-        <div class="sidebar-card-title" style="color: #60A5FA;">STOP LOSS (SL)</div>
+        <div class="sidebar-card-title" style="color: #EF4444;">STOP LOSS / SUPPORT (SL)</div>
         <div class="sidebar-card-value">RM {levels['s']:.2f}</div>
     </div>
     <div class="sidebar-card">
-        <div class="sidebar-card-title" style="color: #C084FC;">ENTRY PRICE (EP)</div>
+        <div class="sidebar-card-title" style="color: #22C55E;">ENTRY PRICE (EP)</div>
         <div class="sidebar-card-value">RM {levels['ep']:.2f}</div>
     </div>
     <div class="sidebar-card">
-        <div class="sidebar-card-title" style="color: #FBBF24;">TARGET (TP)</div>
+        <div class="sidebar-card-title" style="color: #9CA3AF;">TARGET (TP)</div>
         <div class="sidebar-card-value">RM {levels['tp']:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
 
 # ============================================================
-# UTAMA: CARTA GANN SQUARE (PENAWARAN PENUH TANPA SCROLLBAR)
+# UTAMA: CARTA GANN SQUARE (KUSTOM WARNA BLINK)
 # ============================================================
 st.title("🎯 MFR GANN SQUARE OF 9")
 
@@ -243,9 +240,7 @@ min_c, max_c = min(p[1] for p in positions), max(p[1] for p in positions)
 visible_cols = max_c - min_c + 1
 visible_rows = max_r - min_r + 1
 
-highlight_nums = {levels['s_num'], levels['ep_num'], levels['tp_num']}
-
-# Bina Kod HTML/CSS Carta
+# Bina Kod HTML/CSS dengan Animasi Blinking Mengikut Level
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -280,13 +275,37 @@ html_code = f"""
         font-weight: bold;
         user-select: none;
     }}
-    @keyframes blink {{
-        0% {{ background-color: #FFE5B4; color: #FF8C00; outline: 2px solid #FF8C00; z-index: 10; }}
-        50% {{ background-color: #FF8C00; color: #FFFFFF; outline: 2px solid #FF8C00; z-index: 10; }}
-        100% {{ background-color: #FFE5B4; color: #FF8C00; outline: 2px solid #FF8C00; z-index: 10; }}
+
+    /* --- ANIMASI BLINKING WARNA KHAS --- */
+    
+    /* 🟢 ENTRY PRICE (Hijau) */
+    @keyframes blink-green {{
+        0% {{ background-color: #DCFCE7; color: #15803D; outline: 2px solid #22C55E; z-index: 10; }}
+        50% {{ background-color: #22C55E; color: #FFFFFF; outline: 2px solid #22C55E; z-index: 10; }}
+        100% {{ background-color: #DCFCE7; color: #15803D; outline: 2px solid #22C55E; z-index: 10; }}
     }}
-    .blink-cell {{
-        animation: blink 1s infinite;
+    .blink-ep {{
+        animation: blink-green 1s infinite;
+    }}
+
+    /* 🩶 TARGET PRICE (Kelabu) */
+    @keyframes blink-grey {{
+        0% {{ background-color: #F3F4F6; color: #374151; outline: 2px solid #6B7280; z-index: 10; }}
+        50% {{ background-color: #6B7280; color: #FFFFFF; outline: 2px solid #6B7280; z-index: 10; }}
+        100% {{ background-color: #F3F4F6; color: #374151; outline: 2px solid #6B7280; z-index: 10; }}
+    }}
+    .blink-tp {{
+        animation: blink-grey 1s infinite;
+    }}
+
+    /* 🔴 SUPPORT / STOP LOSS (Merah) */
+    @keyframes blink-red {{
+        0% {{ background-color: #FEE2E2; color: #B91C1C; outline: 2px solid #EF4444; z-index: 10; }}
+        50% {{ background-color: #EF4444; color: #FFFFFF; outline: 2px solid #EF4444; z-index: 10; }}
+        100% {{ background-color: #FEE2E2; color: #B91C1C; outline: 2px solid #EF4444; z-index: 10; }}
+    }}
+    .blink-sl {{
+        animation: blink-red 1s infinite;
     }}
 </style>
 </head>
@@ -302,8 +321,13 @@ for r in range(min_r, max_r + 1):
             bg_color = COLOR_HEX.get(symbol, "#FFFFFF")
             text_color = TEXT_COLOR_HEX.get(symbol, "#000000")
 
-            if num in highlight_nums:
-                html_code += f'<div class="gann-cell blink-cell">{num}</div>'
+            # Semak jenis level untuk guna class blink yang betul
+            if num == levels['ep_num']:
+                html_code += f'<div class="gann-cell blink-ep">{num}</div>'
+            elif num == levels['tp_num']:
+                html_code += f'<div class="gann-cell blink-tp">{num}</div>'
+            elif num == levels['s_num']:
+                html_code += f'<div class="gann-cell blink-sl">{num}</div>'
             else:
                 html_code += f'<div class="gann-cell" style="background-color: {bg_color}; color: {text_color};">{num}</div>'
         else:
@@ -315,6 +339,5 @@ html_code += """
 </html>
 """
 
-# Ketinggian dinamis mencukupi supaya tiada scrollbar
 total_height = visible_rows * 38 + 20
 components.html(html_code, height=total_height, scrolling=False)
