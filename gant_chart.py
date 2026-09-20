@@ -2,11 +2,11 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ============================================================
-# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (CUSTOM BLINK COLORS)
+# MFR GANN SQUARE OF 9 - STREAMLIT EDITION (BORDER BLINKING)
 # ============================================================
 
 st.set_page_config(
-    page_title="MFR Gann Square of 9",
+    page_title="MFR Gann Trade",
     page_icon="📊",
     layout="wide"
 )
@@ -213,18 +213,18 @@ with st.sidebar:
         <div class="sidebar-card-value">RM {levels['s']:.2f}</div>
     </div>
     <div class="sidebar-card">
-        <div class="sidebar-card-title" style="color: #22C55E;">ENTRY PRICE (EP)</div>
+        <div class="sidebar-card-title" style="color: #F97316;">ENTRY PRICE (EP)</div>
         <div class="sidebar-card-value">RM {levels['ep']:.2f}</div>
     </div>
     <div class="sidebar-card">
-        <div class="sidebar-card-title" style="color: #9CA3AF;">TARGET (TP)</div>
+        <div class="sidebar-card-title" style="color: #22C55E;">TARGET (TP)</div>
         <div class="sidebar-card-value">RM {levels['tp']:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
 
 # ============================================================
-# UTAMA: CARTA GANN SQUARE (KUSTOM WARNA BLINK)
+# UTAMA: CARTA GANN SQUARE (BORDER BLINKING)
 # ============================================================
 st.title("🎯 MFR GANN SQUARE OF 9")
 
@@ -240,7 +240,7 @@ min_c, max_c = min(p[1] for p in positions), max(p[1] for p in positions)
 visible_cols = max_c - min_c + 1
 visible_rows = max_r - min_r + 1
 
-# Bina Kod HTML/CSS dengan Animasi Blinking Mengikut Level
+# Bina HTML/CSS: Hanya Bingkai (Border) Sahaja Yang Berkelip
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -274,38 +274,40 @@ html_code = f"""
         font-size: clamp(8px, 1.1vw, 13px);
         font-weight: bold;
         user-select: none;
+        position: relative;
+        box-sizing: border-box;
     }}
 
-    /* --- ANIMASI BLINKING WARNA KHAS --- */
+    /* --- ANIMASI BLINKING BINGKAI (BORDER) --- */
     
-    /* 🟢 ENTRY PRICE (Hijau) */
-    @keyframes blink-green {{
-        0% {{ background-color: #DCFCE7; color: #15803D; outline: 2px solid #22C55E; z-index: 10; }}
-        50% {{ background-color: #22C55E; color: #FFFFFF; outline: 2px solid #22C55E; z-index: 10; }}
-        100% {{ background-color: #DCFCE7; color: #15803D; outline: 2px solid #22C55E; z-index: 10; }}
+    /* 🟠 ENTRY PRICE: Bingkai Oren Berkelip */
+    @keyframes border-orange {{
+        0% {{ box-shadow: inset 0 0 0 3px #FF8C00; z-index: 10; }}
+        50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #FF8C00; z-index: 10; }}
     }}
-    .blink-ep {{
-        animation: blink-green 1s infinite;
-    }}
-
-    /* 🩶 TARGET PRICE (Kelabu) */
-    @keyframes blink-grey {{
-        0% {{ background-color: #F3F4F6; color: #374151; outline: 2px solid #6B7280; z-index: 10; }}
-        50% {{ background-color: #6B7280; color: #FFFFFF; outline: 2px solid #6B7280; z-index: 10; }}
-        100% {{ background-color: #F3F4F6; color: #374151; outline: 2px solid #6B7280; z-index: 10; }}
-    }}
-    .blink-tp {{
-        animation: blink-grey 1s infinite;
+    .blink-border-ep {{
+        animation: border-orange 1s infinite;
     }}
 
-    /* 🔴 SUPPORT / STOP LOSS (Merah) */
-    @keyframes blink-red {{
-        0% {{ background-color: #FEE2E2; color: #B91C1C; outline: 2px solid #EF4444; z-index: 10; }}
-        50% {{ background-color: #EF4444; color: #FFFFFF; outline: 2px solid #EF4444; z-index: 10; }}
-        100% {{ background-color: #FEE2E2; color: #B91C1C; outline: 2px solid #EF4444; z-index: 10; }}
+    /* 🔴 SUPPORT / STOP LOSS: Bingkai Merah Berkelip */
+    @keyframes border-red {{
+        0% {{ box-shadow: inset 0 0 0 3px #FF0000; z-index: 10; }}
+        50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #FF0000; z-index: 10; }}
     }}
-    .blink-sl {{
-        animation: blink-red 1s infinite;
+    .blink-border-sl {{
+        animation: border-red 1s infinite;
+    }}
+
+    /* 🟢 TARGET PRICE: Bingkai Hijau Berkelip */
+    @keyframes border-green {{
+        0% {{ box-shadow: inset 0 0 0 3px #000000; z-index: 10; }}
+        50% {{ box-shadow: inset 0 0 0 0px transparent; z-index: 10; }}
+        100% {{ box-shadow: inset 0 0 0 3px #000000; z-index: 10; }}
+    }}
+    .blink-border-tp {{
+        animation: border-green 1s infinite;
     }}
 </style>
 </head>
@@ -321,15 +323,16 @@ for r in range(min_r, max_r + 1):
             bg_color = COLOR_HEX.get(symbol, "#FFFFFF")
             text_color = TEXT_COLOR_HEX.get(symbol, "#000000")
 
-            # Semak jenis level untuk guna class blink yang betul
+            # Kekalkan warna asal box, tambah class border-blink jika berkenaan
+            blink_class = ""
             if num == levels['ep_num']:
-                html_code += f'<div class="gann-cell blink-ep">{num}</div>'
-            elif num == levels['tp_num']:
-                html_code += f'<div class="gann-cell blink-tp">{num}</div>'
+                blink_class = "blink-border-ep"
             elif num == levels['s_num']:
-                html_code += f'<div class="gann-cell blink-sl">{num}</div>'
-            else:
-                html_code += f'<div class="gann-cell" style="background-color: {bg_color}; color: {text_color};">{num}</div>'
+                blink_class = "blink-border-sl"
+            elif num == levels['tp_num']:
+                blink_class = "blink-border-tp"
+
+            html_code += f'<div class="gann-cell {blink_class}" style="background-color: {bg_color}; color: {text_color};">{num}</div>'
         else:
             html_code += '<div class="gann-cell" style="background-color: #FFFFFF;"></div>'
 
