@@ -1,8 +1,8 @@
 import streamlit as st
-import pandas as pd
+import streamlit.components.v1 as components
 
 # ============================================================
-# MFR GANN SQUARE OF 9 - STREAMLIT WEB EDITION
+# MFR GANN SQUARE OF 9 - STREAMLIT HTML/CSS GRID EDITION
 # ============================================================
 
 st.set_page_config(
@@ -12,16 +12,24 @@ st.set_page_config(
 )
 
 GRID_SIZE = 35
-MAX_NUMBER = 210  # Had nombor 1..210
+MAX_NUMBER = 210  # Batas nomor 1..210
 
-# Warna Asas
-WHITE = "#FFFFFF"
-BLUE = "#0000DD"
-RED = "#BF0000"
-YELLOW = "#F0F000"
-GREEN = "#A6FA74"
-BLACK = "#000000"
-ORANGE_HIGHLIGHT = "#FF8C00"
+# Kode Warna Hex Persis Seperti Aplikasi Desktop
+COLOR_HEX = {
+    "R": "#BF0000", # Red (Very Strong)
+    "B": "#0000DD", # Blue (Strong)
+    "G": "#A6FA74", # Green (Weak)
+    "Y": "#F0F000", # Yellow (Very Weak)
+    "W": "#FFFFFF"  # White (Neutral)
+}
+
+TEXT_COLOR_HEX = {
+    "R": "#FFFFFF",
+    "B": "#FFFFFF",
+    "G": "#000000",
+    "Y": "#000000",
+    "W": "#000000"
+}
 
 COLOR_PATTERN = [
     "BWWWWWWWWWWWWWWWWRWWWWWWWWWWWWWWWWB",
@@ -157,53 +165,50 @@ def calculate_levels(cp):
 
 
 # ============================================================
-# STREAMLIT UI LAYOUT
+# STREAMLIT UI LAYOUT & CUSTOM CSS CANVAS RENDERER
 # ============================================================
 
-st.title("🎯 MFR GANN SQUARE OF 9")
-st.markdown("Calculator & Interactive Chart Generator")
+st.markdown("""
+<style>
+    .metric-card {
+        background-color: #F8FAFC;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #D9E1EA;
+        text-align: center;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Sidebar untuk Input
+st.title("🎯 MFR GANN SQUARE OF 9")
+
+# Sidebar
 with st.sidebar:
     st.header("⚙️ PRICE INPUT")
     cp_input = st.number_input(
-        "Masukkan Current Price (CP):",
+        "Current Price (CP):",
         min_value=0.01,
         value=0.80,
         step=0.01,
         format="%.2f"
     )
-    calculate_btn = st.button("CALCULATE GANN LEVELS", use_container_width=True)
+    st.button("CALCULATE GANN LEVELS", use_container_width=True)
 
-# Lakukan pengiraan
+# Hitung Level
 levels = calculate_levels(cp_input)
 
-# Paparan Hasil (Metrics)
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric(label="🛑 STOP LOSS (SL)", value=f"RM {levels['s']:.2f}")
-with col2:
-    st.metric(label="🎯 ENTRY PRICE (EP)", value=f"RM {levels['ep']:.2f}")
-with col3:
-    st.metric(label="🚀 TARGET (TP)", value=f"RM {levels['tp']:.2f}")
+# Ringkasan Level (Metrics)
+c1, c2, c3 = st.columns(3)
+with c1:
+    st.markdown(f"<div class='metric-card'><small style='color:#0000DD;font-weight:bold;'>STOP LOSS (SL)</small><h2 style='margin:0;'>RM {levels['s']:.2f}</h2></div>", unsafe_allow_html=True)
+with c2:
+    st.markdown(f"<div class='metric-card'><small style='color:#7C3AED;font-weight:bold;'>ENTRY PRICE (EP)</small><h2 style='margin:0;'>RM {levels['ep']:.2f}</h2></div>", unsafe_allow_html=True)
+with c3:
+    st.markdown(f"<div class='metric-card'><small style='color:#D97706;font-weight:bold;'>TARGET (TP)</small><h2 style='margin:0;'>RM {levels['tp']:.2f}</h2></div>", unsafe_allow_html=True)
 
-st.divider()
+st.write("")
 
-# Paparan Carta Jadual Gann
-st.subheader("📌 Gann Square Chart Visualizer")
-
-# Menjana susunan visual carta
-highlight_nums = {levels['s_num'], levels['ep_num'], levels['tp_num']}
-
-color_map = {
-    'R': '#FFCCCC',  # Red
-    'B': '#CCE5FF',  # Blue
-    'Y': '#FFF5CC',  # Yellow
-    'G': '#D4EDDA',  # Green
-    'W': '#FFFFFF'   # White
-}
-
-# Dapatkan julat kawasan carta yang ada nombor 1..210
+# Menghitung batas koordinat nomor 1..210
 positions = [
     (row, col)
     for row in range(GRID_SIZE)
@@ -213,36 +218,77 @@ positions = [
 
 min_r, max_r = min(p[0] for p in positions), max(p[0] for p in positions)
 min_c, max_c = min(p[1] for p in positions), max(p[1] for p in positions)
+visible_cols = max_c - min_c + 1
 
+highlight_nums = {levels['s_num'], levels['ep_num'], levels['tp_num']}
 
-def style_gann_grid(val):
-    if val == "" or val == "0":
-        return ""
-    num = int(val.replace("★ ", ""))
-    
-    # Warna sorotan khas untuk SL, EP, TP
-    if num in highlight_nums:
-        return f"background-color: {ORANGE_HIGHLIGHT}; color: white; font-weight: bold; border: 2px solid black;"
+# Generate HTML Grid Persis Seperti Canvas Tkinter
+html_code = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {{
+        margin: 0;
+        padding: 10px;
+        background-color: #F7F9FC;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+    }}
+    .gann-container {{
+        display: grid;
+        grid-template-columns: repeat({visible_cols}, minmax(18px, 1fr));
+        gap: 1px;
+        background-color: #777777;
+        border: 1px solid #777777;
+        padding: 1px;
+        width: 100%;
+        max-width: 900px;
+    }}
+    .gann-cell {{
+        aspect-ratio: 1.8 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(8px, 1.1vw, 11px);
+        font-weight: bold;
+        user-select: none;
+    }}
+    @keyframes blink {{
+        0% {{ background-color: #FFE5B4; color: #FF8C00; outline: 2px solid #FF8C00; z-index: 10; }}
+        50% {{ background-color: #FF8C00; color: #FFFFFF; outline: 2px solid #FF8C00; z-index: 10; }}
+        100% {{ background-color: #FFE5B4; color: #FF8C00; outline: 2px solid #FF8C00; z-index: 10; }}
+    }}
+    .blink-cell {{
+        animation: blink 1s infinite;
+    }}
+</style>
+</head>
+<body>
+<div class="gann-container">
+"""
 
-    symbol = get_cell_color(num)
-    bg = color_map.get(symbol, '#FFFFFF')
-    return f"background-color: {bg}; color: black;"
-
-
-# Bina DataFrame untuk paparan Streamlit
-table_data = []
 for r in range(min_r, max_r + 1):
-    row_data = []
     for c in range(min_c, max_c + 1):
-        val = SQUARE[r][c]
-        if 1 <= val <= MAX_NUMBER:
-            row_data.append(f"★ {val}" if val in highlight_nums else str(val))
+        num = SQUARE[r][c]
+        if 1 <= num <= MAX_NUMBER:
+            symbol = COLOR_PATTERN[r][c]
+            bg_color = COLOR_HEX.get(symbol, "#FFFFFF")
+            text_color = TEXT_COLOR_HEX.get(symbol, "#000000")
+            
+            if num in highlight_nums:
+                html_code += f'<div class="gann-cell blink-cell">{num}</div>'
+            else:
+                html_code += f'<div class="gann-cell" style="background-color: {bg_color}; color: {text_color};">{num}</div>'
         else:
-            row_data.append("")
-    table_data.append(row_data)
+            html_code += '<div class="gann-cell" style="background-color: #FFFFFF;"></div>'
 
-df = pd.DataFrame(table_data)
+html_code += """
+</div>
+</body>
+</html>
+"""
 
-# Tampilkan dataframe dengan gaya warna
-styled_df = df.style.map(style_gann_grid)
-st.dataframe(styled_df, height=600, use_container_width=True)
+# Render HTML komponen ke Streamlit dengan tinggi responsif
+components.html(html_code, height=450, scrolling=True)
