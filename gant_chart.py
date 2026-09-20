@@ -198,7 +198,7 @@ with st.sidebar:
     cp_input = st.number_input(
         "Current Price (CP):",
         min_value=0.01,
-        value=1.00,
+        value=0.01,
         step=0.01,
         format="%.2f"
     )
@@ -231,7 +231,7 @@ with st.sidebar:
 # ============================================================
 # UTAMA: CARTA GANN SQUARE
 # ============================================================
-st.title("🎯 MFR GANN SQUARE OF 9")
+st.title("🎯 @MFR GANN CHEK")
 
 positions = [
     (row, col)
